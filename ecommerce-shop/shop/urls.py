@@ -7,6 +7,9 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name='index.html'), name='home'),
+        path('cart.html', TemplateView.as_view(template_name='cart.html'), name='cart'),
+    path('checkout.html', TemplateView.as_view(template_name='checkout.html'), name='checkout'),
+    path('bill.html', TemplateView.as_view(template_name='bill.html'), name='bill'),
 ]
 
 if settings.DEBUG:
