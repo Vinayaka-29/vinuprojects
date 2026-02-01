@@ -1,0 +1,7 @@
+.gitattributes# Linguist language overrides
+*.py linguist-detectable=true
+*.html linguist-documentation
+*.md linguist-documentation
+
+# Mark Python as the primary language
+*.py linguist-language=Python
