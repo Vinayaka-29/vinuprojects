@@ -4,6 +4,8 @@ A full-featured Django e-commerce platform with product catalog, shopping cart, 
 
 ## 🌐 Live Demo
 
+🚀 **Live Website**: [https://ecommerce-shop-1rr0.onrender.com](https://ecommerce-shop-1rr0.onrender.com)
+
 **Repository**: [https://github.com/Vinayaka-29/ecommerce-shop](https://github.com/Vinayaka-29/ecommerce-shop)
 > **Note**: GitHub Pages hosts static files. For full Django functionality with database and cart features, deploy to PythonAnywhere or Render (see Deployment section below).
 
