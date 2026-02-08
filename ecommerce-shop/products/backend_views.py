@@ -34,18 +34,41 @@ def admin_login(request):
             login(request, user)
             return redirect('admin_dashboard')
         else:
-            return JsonResponse({'error': 'Invalid username or password. Access for admin users only.'})
+            return render(request, 'admin_login.html', {
+                'error': 'Invalid username or password. Access for admin users only.'
+            })
     
-    return JsonResponse({'status': 'admin_login_test', 'message': 'Admin login endpoint is working'})
+    return render(request, 'admin_login.html')
+
 
 def admin_logout(request):
     """
     Admin logout view
     """
     logout(request)
-def admin_login(request):
-    return JsonResponse({'status': 'admin_login_test', 'message': 'Admin login endpoint working!'})
+    return redirect('admin_login')
 
+
+# =======================
+# ADMIN DASHBOARD
+# =======================
+
+@login_required(login_url='admin_login')
+def admin_dashboard(request):
+    """
+    Main admin dashboard showing order statistics and recent orders
+    """
+    # Check if user is staff/admin
+    if not request.user.is_staff:
+        return redirect('admin_login')
+    
+    # Get statistics
+    total_orders = Order.objects.count()
+    pending_orders = Order.objects.filter(status='pending').count()
+    confirmed_orders = Order.objects.filter(status='confirmed').count()
+    shipped_orders = Order.objects.filter(status='shipped').count()
+    delivered_orders = Order.objects.filter(status='delivered').count()
+    cancelled_orders = Order.objects.filter(status='cancelled').count()
     
     # Calculate total revenue
     total_revenue = Order.objects.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
