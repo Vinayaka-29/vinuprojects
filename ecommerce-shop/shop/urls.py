@@ -16,10 +16,8 @@ urlpatterns = [
     path('admin/login/', backend_views.admin_login, name='admin_login'),
     path('admin/dashboard/', backend_views.admin_dashboard, name='admin_dashboard'),
     path('admin/orders/', backend_views.view_all_orders, name='view_all_orders'),
-    path('admin/orders/<int:order_id>/', backend_views.view_order_detail, name='view_order_detail'),
-    path('admin/reports/', backend_views.reports, name='admin_reports'),    path('admin/orders/export-csv/', backend_views.export_orders_csv, name='export_orders_csv'),
-    path('admin/orders/export-json/', backend_views.export_orders_json, name='export_orders_json'),
-    ]
+    path('admin/orders/<str:order_id>/', backend_views.view_order_detail, name='view_order_detail'),    path('admin/reports/', backend_views.reports, name='admin_reports'),    path('admin/orders/export-csv/', backend_views.export_orders_csv, name='export_orders_csv'),
+    path('admin/orders/<str:order_id>/update-status/', backend_views.update_order_status, name='update_order_status_view'),    ]
         # Order Management API Endpoints
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
