@@ -38,8 +38,7 @@ def admin_login(request):
                 'error': 'Invalid username or password. Access for admin users only.'
             })
     
-    return render(request, 'admin_login.html')
-
+    return JsonResponse({'status': 'admin_login_test', 'message': 'Admin login endpoint is working'})
 
 def admin_logout(request):
     """
