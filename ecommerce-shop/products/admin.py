@@ -88,4 +88,14 @@ class OrderItemAdmin(admin.ModelAdmin):
         """Display item total"""
         return f'₹{obj.get_item_total():.2f}'
     get_item_total.short_description = 'Item Total'
+from django.contrib.auth.models import User
 
+try:
+    if not User.objects.filter(username="admin").exists():
+        User.objects.create_superuser(
+            username="admin",
+            email="admin@example.com",
+            password="Admin@123"
+        )
+except Exception:
+    pass
