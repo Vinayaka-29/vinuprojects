@@ -14,8 +14,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # Website pages
-    path('', TemplateView.as_view(template_name='index.html'), name='home'),
-    path('products/', product_list, name='products'),  # ✅ THIS WAS MISSING
+    #path('', TemplateView.as_view(template_name='index.html'), name='home'),
+    #path('products/', product_list, name='products'),  # ✅ THIS WAS MISSING
     path('cart.html', TemplateView.as_view(template_name='cart.html'), name='cart'),
     path('checkout.html', TemplateView.as_view(template_name='checkout.html'), name='checkout'),
     path('bill.html', TemplateView.as_view(template_name='bill.html'), name='bill'),
