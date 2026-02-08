@@ -44,17 +44,17 @@ ROOT_URLCONF = "shop.urls"
 WSGI_APPLICATION = "shop.wsgi.application"
 
 # --------------------------------------------------
-# TEMPLATES
+# TEMPLATES  ✅ FIXED
 # --------------------------------------------------
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
-        "APP_DIRS": True,
+        "DIRS": [],              # ✅ IMPORTANT: leave EMPTY
+        "APP_DIRS": True,        # ✅ REQUIRED for admin
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
-                "django.template.context_processors.request",
+                "django.template.context_processors.request",  # ✅ REQUIRED
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
@@ -101,9 +101,6 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # --------------------------------------------------
-# AUTH
+# DEFAULT FIELD
 # --------------------------------------------------
-LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
