@@ -21,7 +21,7 @@ urlpatterns = [
     path('admin/orders/<str:order_id>/update-status/', backend_views.update_order_status, name='update_order_status_view'),  
     # API Endpoints for Order Management
     path('api/orders/', api.get_all_orders, name='api_get_all_orders'),
-    path('api/orders/<str:order_id>/', api.get_order_by_id='api_get_order_detail'),
+    path('api/orders/<str:order_id>/', api.get_order_by_id, name='api_get_order_detail'),
     path('api/orders/status/<str:status>/', api.get_orders_by_status, name='api_get_orders_by_status'),
     path('api/orders/<str:order_id>/update-status/', api.update_order_status_api, name='api_update_order_status'),
     path('api/orders/statistics/', api.get_order_statistics, name='api_get_statistics'),
