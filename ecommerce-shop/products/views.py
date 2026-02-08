@@ -116,3 +116,6 @@ def order_tracking_page(request):
     Page for customers to track their orders
     """
     return render(request, 'order-tracking.html')
+def product_list(request):
+    products = Product.objects.all().order_by('-id')
+    return render(request, 'products.html', {'products': products})
