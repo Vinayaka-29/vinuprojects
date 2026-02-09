@@ -11,8 +11,8 @@ class ProductsConfig(AppConfig):
         User = get_user_model()
 
         username = os.environ.get("ADMIN_USERNAME")
-        
         password = os.environ.get("ADMIN_PASSWORD")
+        email = os.environ.get("ADMIN_EMAIL", "")
 
         if not username or not password:
             return
@@ -20,6 +20,6 @@ class ProductsConfig(AppConfig):
         if not User.objects.filter(username=username).exists():
             User.objects.create_superuser(
                 username=username,
-                
-                password=password
+                password=password,
+                email=email,
             )
