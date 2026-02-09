@@ -70,3 +70,32 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# -------------------------
+# JAZZMIN ADMIN SETTINGS
+# -------------------------
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Shop Admin",
+    "site_header": "E-Commerce Dashboard",
+    "site_brand": "My Shop Backend",
+
+    "welcome_sign": "Welcome to Admin Panel",
+
+    "theme": "cosmo",   # colorful & clean
+
+    "topmenu_links": [
+        {"name": "View Site", "url": "/", "new_window": True},
+        {"model": "auth.User"},
+        {"model": "products.Product"},
+        {"model": "products.Order"},
+    ],
+
+    "icons": {
+        "auth": "fas fa-users",
+        "products.Product": "fas fa-box",
+        "products.Order": "fas fa-shopping-cart",
+    },
+
+    "show_sidebar": True,
+    "navigation_expanded": True,
+}
