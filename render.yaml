@@ -2,5 +2,10 @@ services:
   - type: web
     name: ecommerce-shop
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn shop.wsgi:application
+    buildCommand: pip install -r ecommerce-shop/requirements.txt
+    startCommand: >
+      sh -c "
+      python ecommerce-shop/manage.py migrate &&
+      python ecommerce-shop/manage.py collectstatic --noinput &&
+      gunicorn shop.wsgi:application
+      "
