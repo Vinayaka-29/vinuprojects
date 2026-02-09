@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Product, Order
 
 def index(request):
@@ -6,9 +6,27 @@ def index(request):
     return render(request, "index.html", {"products": products})
 
 
-def order_detail(request, order_id):
-    try:
-        order = Order.objects.get(id=order_id)
-        return render(request, "order_detail.html", {"order": order})
-    except Order.DoesNotExist:
-        return render(request, "order_not_found.html")
+def dashboard(request):
+    return render(request, "backend/dashboard.html")
+
+
+def products(request):
+    items = Product.objects.all()
+    return render(request, "backend/products.html", {"products": items})
+
+
+def add_product(request):
+    if request.method == "POST":
+        Product.objects.create(
+            name=request.POST["name"],
+            price=request.POST["price"],
+            description=request.POST["description"],
+            image=request.FILES["image"],
+        )
+        return redirect("/backend/products/")
+    return render(request, "backend/add_product.html")
+
+
+def orders(request):
+    all_orders = Order.objects.all()
+    return render(request, "backend/orders.html", {"orders": all_orders})
