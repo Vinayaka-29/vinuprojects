@@ -1,121 +1,201 @@
-from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from functools import wraps
 import json
-from datetime import datetime
+
 from .models import Order, OrderItem, Product
 
+
+# =======================
+# ADMIN TOKEN AUTH
+# =======================
+
+def token_auth_required(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+
+        if not auth_header.startswith("Bearer "):
+            return JsonResponse(
+                {"success": False, "error": "Authorization header missing"},
+                status=401
+            )
+
+        token = auth_header.split(" ")[1]
+        VALID_TOKEN = "vinayaka29_admin_token_2024"
+
+        if token != VALID_TOKEN:
+            return JsonResponse(
+                {"success": False, "error": "Invalid token"},
+                status=403
+            )
+
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
+# =======================
+# ADMIN APIs
+# =======================
+
+@token_auth_required
+@require_http_methods(["GET"])
+def get_all_orders(request):
+    orders = Order.objects.all().order_by("-created_at")
+
+    data = []
+    for order in orders:
+        items = [
+            {
+                "product": item.product.name,
+                "quantity": item.quantity,
+                "price": str(item.price_at_purchase),
+                "total": str(item.get_item_total()),
+            }
+            for item in order.items.all()
+        ]
+
+        data.append({
+            "order_id": order.order_id,
+            "customer_name": order.customer_name,
+            "customer_email": order.customer_email,
+            "customer_phone": order.customer_phone,
+            "customer_address": order.customer_address,
+            "total_amount": str(order.total_amount),
+            "status": order.status,
+            "created_at": order.created_at.isoformat(),
+            "items": items,
+        })
+
+    return JsonResponse({"success": True, "orders": data})
+
+
+@token_auth_required
+@require_http_methods(["GET"])
+def get_order_by_id(request, order_id):
+    try:
+        order = Order.objects.get(order_id=order_id)
+    except Order.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Order not found"}, status=404)
+
+    items = [
+        {
+            "product": item.product.name,
+            "quantity": item.quantity,
+            "price": str(item.price_at_purchase),
+            "total": str(item.get_item_total()),
+        }
+        for item in order.items.all()
+    ]
+
+    return JsonResponse({
+        "success": True,
+        "order": {
+            "order_id": order.order_id,
+            "customer_name": order.customer_name,
+            "customer_email": order.customer_email,
+            "customer_phone": order.customer_phone,
+            "customer_address": order.customer_address,
+            "total_amount": str(order.total_amount),
+            "status": order.status,
+            "created_at": order.created_at.isoformat(),
+            "items": items,
+        }
+    })
+
+
+@token_auth_required
+@require_http_methods(["POST"])
+def update_order_status(request, order_id):
+    try:
+        data = json.loads(request.body)
+        new_status = data.get("status")
+
+        if new_status not in ["pending", "confirmed", "shipped", "delivered", "cancelled"]:
+            return JsonResponse({"success": False, "error": "Invalid status"}, status=400)
+
+        order = Order.objects.get(order_id=order_id)
+        order.status = new_status
+        order.save()
+
+        return JsonResponse({
+            "success": True,
+            "message": f"Order {order_id} updated to {new_status}"
+        })
+
+    except Order.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Order not found"}, status=404)
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+# =======================
+# CUSTOMER APIs
+# =======================
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def create_order(request):
     """
-    API endpoint to create a new order from checkout form data
-    Expected POST data: {
-        'order_id': str,
-        'customer_name': str,
-        'customer_email': str,
-        'customer_phone': str,
-        'customer_address': str,
-        'customer_city': str,
-        'customer_state': str,
-        'customer_pincode': str,
-        'customer_country': str,
-        'items': [{'product_id': int, 'quantity': int, 'price': float}],
-        'subtotal': float,
-        'tax': float,
-        'shipping_cost': float,
-        'total_amount': float,
-        'payment_method': str
-    }
+    Creates order from frontend checkout
     """
     try:
         data = json.loads(request.body)
-        
-        # Create Order
+
         order = Order.objects.create(
-            order_id=data.get('order_id'),
-            customer_name=data.get('customer_name'),
-            customer_email=data.get('customer_email'),
-            customer_phone=data.get('customer_phone'),
-            customer_address=data.get('customer_address'),
-            customer_city=data.get('customer_city'),
-            customer_state=data.get('customer_state'),
-            customer_pincode=data.get('customer_pincode'),
-            customer_country=data.get('customer_country', 'India'),
-            subtotal=data.get('subtotal', 0),
-            tax=data.get('tax', 0),
-            shipping_cost=data.get('shipping_cost', 50),
-            total_amount=data.get('total_amount', 0),
-            payment_method=data.get('payment_method', 'cod'),
-            status='pending'
+            order_id=data["order_id"],
+            customer_name=data["customer_name"],
+            customer_email=data["customer_email"],
+            customer_phone=data["customer_phone"],
+            customer_address=data["customer_address"],
+            total_amount=data["total_amount"],
+            status="pending",
         )
-        
-        # Create OrderItems
-        items_data = data.get('items', [])
-        for item in items_data:
-            product = Product.objects.get(id=item.get('product_id'))
+
+        for item in data.get("items", []):
+            product = Product.objects.get(id=item["product_id"])
             OrderItem.objects.create(
                 order=order,
                 product=product,
-                quantity=item.get('quantity', 1),
-                price_at_purchase=item.get('price', product.price)
+                quantity=item["quantity"],
+                price_at_purchase=item["price"],
             )
-        
+
         return JsonResponse({
-            'success': True,
-            'order_id': order.order_id,
-            'message': 'Order created successfully'
+            "success": True,
+            "order_id": order.order_id
         })
-    
+
     except Product.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Product not found'}, status=404)
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+        return JsonResponse({"success": False, "error": "Product not found"}, status=404)
+
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
 
 
 @require_http_methods(["GET"])
 def track_order(request, order_id):
-    """
-    API endpoint to track order status
-    Returns order details and items
-    """
     try:
-        order = get_object_or_404(Order, order_id=order_id)
-        items = order.items.all()
-        
-        items_data = [{
-            'product': item.product.name,
-            'quantity': item.quantity,
-            'price': str(item.price_at_purchase),
-            'total': str(item.get_item_total())
-        } for item in items]
-        
+        order = Order.objects.get(order_id=order_id)
+
+        items = [
+            {
+                "product": item.product.name,
+                "quantity": item.quantity,
+                "total": str(item.get_item_total()),
+            }
+            for item in order.items.all()
+        ]
+
         return JsonResponse({
-            'order_id': order.order_id,
-            'status': order.status,
-            'customer_name': order.customer_name,
-            'customer_email': order.customer_email,
-            'total_amount': str(order.total_amount),
-            'payment_method': order.payment_method,
-            'created_at': order.created_at.isoformat(),
-            'items': items_data
+            "order_id": order.order_id,
+            "status": order.status,
+            "total_amount": str(order.total_amount),
+            "items": items,
         })
-    
+
     except Order.DoesNotExist:
-        return JsonResponse({'error': 'Order not found'}, status=404)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-
-def order_tracking_page(request):
-    """
-    Page for customers to track their orders
-    """
-    return render(request, 'order-tracking.html')
-def product_list(request):
-    products = Product.objects.all().order_by('-id')
-    return render(request, 'products.html', {'products': products})
+        return JsonResponse({"error": "Order not found"}, status=404)
