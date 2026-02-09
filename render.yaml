@@ -2,9 +2,5 @@ services:
   - type: web
     name: ecommerce-shop
     env: python
-    plan: free
-    buildCommand: |
-      pip install -r requirements.txt
-      python manage.py migrate
-      python manage.py collectstatic --noinput
-    startCommand: gunicorn shop.wsgi:application --bind 0.0.0.0:$PORT
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn shop.wsgi:application
